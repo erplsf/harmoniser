@@ -6,6 +6,11 @@ data Asset = Asset { currentValue :: Float
 type Portfolio = [Asset]
 
 -- Calculate ratio of each element in regards to the sum of the elements
+
+main :: IO ()
+main = do
+  putStrLn "hello world"
+
 -- ratios :: (Real a) => [a] -> [Rational]
 ratios list = let size = toRational . sum $ list
                in map (/ size) list

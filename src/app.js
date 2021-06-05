@@ -14,7 +14,7 @@ export function appendButton(document) {
             <li className="gs-span-5">
               <a
                 className={`link-default ${styles.emphasizedText}`}
-                onClick={() => calculateAvailableFunds(document)}
+                onClick={() => harmonise(document, true)}
                 href="#"
               >
                 Harmonise!
@@ -32,31 +32,26 @@ export function appendButton(document) {
   });
 }
 
-function calculateAvailableFunds(document) {
-  GM_setValue("state", "");
-  const balances = fetchBalances(document);
-  setAvailableFunds(balances);
-  harmonise(document);
-  // console.log(GM_getValue("calculatedFunds"));
-}
-
-export function harmonise(document) {
+export function harmonise(document, clicked = false) {
+  if (clicked) {
+    // reset the state if user clicked the button
+    // TODO: change later to ad double-click for reset
+    GM_setValue("state", "");
+  }
   const state = GM_getValue("state", "");
   switch (state) {
+    case "":
+      console.log("empty state case");
+      const balances = fetchBalances(document);
+      setAvailableFunds(balances);
+      harmonise(document);
+      break;
     case "fundsCalculated":
       console.log("fundsCalculated state");
       break;
     default:
       console.log("default switch case");
   }
-}
-
-export function restoreConsole() {
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
-  document.body.appendChild(iframe);
-  console = iframe.contentWindow.console;
-  window.console = console;
 }
 
 function fetchBalances(document) {

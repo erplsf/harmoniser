@@ -1,10 +1,10 @@
-import { appendButton, restoreConsole, harmonise } from "./app";
+import { appendButton, harmonise } from "./app";
+import { restoreConsole, locationMatches } from "./util";
 
 restoreConsole();
 
 if (
-  window.location.href.replaceAll(/\?.+/g, "") ===
-  "https://banking.ing.de/app/obligo"
+  locationMatches(window.location.href, "https://banking.ing.de/app/obligo")
 ) {
   appendButton(document);
 }

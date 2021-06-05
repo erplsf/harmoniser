@@ -1,16 +1,12 @@
-import {
-  appendButton,
-  fetchBalances,
-  setConsole,
-  calculateAvailableFunds,
-} from "./app";
+import { appendButton, restoreConsole, harmonise } from "./app";
 
-setConsole();
+restoreConsole();
 
-appendButton(document);
+if (
+  window.location.href.replaceAll(/\?.+/g, "") ===
+  "https://banking.ing.de/app/obligo"
+) {
+  appendButton(document);
+}
 
-const balances = fetchBalances(document);
-
-const funds = calculateAvailableFunds(balances);
-
-console.log(funds);
+harmonise(document);

@@ -12,7 +12,11 @@ export function appendButton(document) {
         const dom = (
           <>
             <li className="gs-span-5">
-              <a className={`link-default ${styles.emphasizedText}`} href="#">
+              <a
+                className={`link-default ${styles.emphasizedText}`}
+                onClick={() => calculateAvailableFunds(document)}
+                href="#"
+              >
                 Harmonise!
               </a>
             </li>
@@ -28,7 +32,26 @@ export function appendButton(document) {
   });
 }
 
-export function setConsole() {
+function calculateAvailableFunds(document) {
+  GM_setValue("state", "");
+  const balances = fetchBalances(document);
+  setAvailableFunds(balances);
+  harmonise(document);
+  // console.log(GM_getValue("calculatedFunds"));
+}
+
+export function harmonise(document) {
+  const state = GM_getValue("state", "");
+  switch (state) {
+    case "fundsCalculated":
+      console.log("fundsCalculated state");
+      break;
+    default:
+      console.log("default switch case");
+  }
+}
+
+export function restoreConsole() {
   const iframe = document.createElement("iframe");
   iframe.style.display = "none";
   document.body.appendChild(iframe);
@@ -36,7 +59,7 @@ export function setConsole() {
   window.console = console;
 }
 
-export function fetchBalances(document) {
+function fetchBalances(document) {
   const balancesMap = {};
   for (const [type, account] of Object.entries(accountMap)) {
     const { iban } = account;
@@ -60,7 +83,7 @@ export function fetchBalances(document) {
   return balancesMap;
 }
 
-export function calculateAvailableFunds(balancesMap) {
+function setAvailableFunds(balancesMap) {
   var { threshold } = accountMap["extra"];
   var balance = balancesMap["extra"];
   const availableFundsForTransfer =
@@ -70,8 +93,10 @@ export function calculateAvailableFunds(balancesMap) {
   const availableFundsInMain = new Fraction(balance) - new Fraction(threshold);
   const availableFundsForInvesting =
     availableFundsForTransfer + availableFundsInMain;
-  return {
+  const fundsMap = {
     amountToTransfer: availableFundsForTransfer,
     amountToInvest: availableFundsForInvesting,
   };
+  GM_setValue("state", "fundsCalculated");
+  GM_setValue("calculatedFunds", fundsMap);
 }

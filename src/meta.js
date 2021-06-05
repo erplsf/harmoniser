@@ -8,6 +8,7 @@
 // @author      process.env.AUTHOR
 // @require     https://cdn.jsdelivr.net/combine/npm/@violentmonkey/dom@1,npm/@violentmonkey/ui@0.5
 // @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@1
+// @require     https://cdn.jsdelivr.net/npm/fraction.js@4.1.1/fraction.min.js
 // ==/UserScript==
 
 /**

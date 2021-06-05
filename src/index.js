@@ -1,3 +1,16 @@
-import {  appendButton } from './app';
+import {
+  appendButton,
+  fetchBalances,
+  setConsole,
+  calculateAvailableFunds,
+} from "./app";
 
-document.body.append(appendButton(document));
+setConsole();
+
+appendButton(document);
+
+const balances = fetchBalances(document);
+
+const funds = calculateAvailableFunds(balances);
+
+console.log(funds);

@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "dev": "rollup -wc rollup.conf.js",
+    "dev": "rollup -wc rollup.conf.dev.js",
     "clean": "del-cli dist",
     "build:js": "rollup -c rollup.conf.js",
     "prebuild": "run-s ci clean",

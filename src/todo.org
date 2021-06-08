@@ -1,0 +1,5 @@
+#+TITLE: Todo
+* DONE Calculate real buying power (taking into acocunt outstanding transactions)
+* TODO Implement algorithm from here: http://optimalrebalancing.tk/explanation.html
+* TODO Fetch the ETF's prices from before-buy pages
+* TODO Move from 'secrets' to user config via button/modal window

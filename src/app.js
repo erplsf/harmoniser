@@ -34,37 +34,142 @@ export function appendButton(document) {
 }
 
 export function harmonise(document, clicked = false) {
-  if (clicked) {
+  const strippedLocation = window.location.toString().replaceAll(/\?.*/g, '');
+  if (clicked && strippedLocation === 'https://banking.ing.de/app/obligo') {
     // reset the state if user clicked the button
     // TODO: change later to add double-click for reset
     GM_setValue('state', '');
   }
   const state = GM_getValue('state', '');
+  const extraTransferLink = getTransferLink(accountMap.extra);
   switch (state) {
     case '': {
       console.log('empty state case');
-      const balances = fetchBalances(document);
-      setAvailableFunds(balances);
-      harmonise(document);
+      GM_setValue('state', 'calculatingRealBalance');
+      const accountLink = getAccountLink(accountMap.main);
+      window.location.assign(accountLink);
       break;
     }
-    case 'fundsCalculated':
+    case 'calculatingRealBalance': {
+      console.log('calculatingRealBalance state');
+      const balance = getAccountBalance(document);
+      const pending = getPendingBalance(document);
+      const realBalance = new Fraction(balance).add(new Fraction(pending));
+      GM_setValue('realBalance', realBalance.round(2).toString());
+      GM_setValue('state', 'calculatingFunds');
+      window.location.assign('https://banking.ing.de/app/obligo');
+      break;
+    }
+    case 'calculatingFunds': {
+      console.log('calculatingFunds state');
+      const balances = fetchBalances(document);
+      calculateAvailableFunds(balances);
+      window.location.reload();
+      break;
+    }
+    case 'fundsCalculated': {
       console.log('fundsCalculated state');
+
+      if (strippedLocation != extraTransferLink) {
+        GM_setValue('state', 'transferringFundsFromExtra');
+        window.location.assign(extraTransferLink);
+      }
+      break;
+    }
+    case 'transferringFundsFromExtra': {
+      console.log('transferringFundsFromExtra state');
+      if (strippedLocation === extraTransferLink) {
+        const input = getInputElement(document);
+        const fundsMap = GM_getValue('calculatedFunds', {});
+        console.log(fundsMap);
+        input.value = fundsMap.amountToTransfer.replace('.', ',');
+        const button = getNextButton(document);
+        GM_setValue('state', 'waitingForExtraApproval');
+        button.click();
+      } else {
+        window.location.assign(extraTransferLink);
+      }
+      break;
+    }
+    case 'waitingForExtraApproval':
+      console.log('waitingForExtraApproval state');
+      if (strippedLocation === 'https://banking.ing.de/app/obligo') {
+      }
       break;
     default:
       console.log('default switch case');
+      console.log(state);
   }
 }
 
-// function getAccountLink(account) {
-//   let shortNumber;
-//   if (account.accountNumber) {
-//     shortNumber = account.accountNumber;
-//   } else {
-//     shortNumber = account.iban.replaceAll(/\s+/g, '');
-//   }
-//   return `https://banking.ing.de/app/${account.prefix}/${shortNumber}`;
-// }
+function getInputElement(document) {
+  return document.querySelector(
+    "input[name='view:eingabepanel:form:betrag:betrag']"
+  );
+}
+
+function getNextButton(document) {
+  return document.querySelector("button[type='submit'][name='buttons:next']");
+}
+
+function getTransferLink(account) {
+  let shortNumber;
+  if (account.accountNumber) {
+    shortNumber = account.accountNumber;
+  } else {
+    shortNumber = account.iban.replaceAll(/\s+/g, '').slice(-10);
+  }
+  return `https://banking.ing.de/app/ueberweisung_sepa/${shortNumber}`;
+}
+
+function getAccountLink(account) {
+  let shortNumber;
+  if (account.accountNumber) {
+    shortNumber = account.accountNumber;
+  } else {
+    shortNumber = account.iban.replaceAll(/\s+/g, '').slice(-10);
+  }
+  return `https://banking.ing.de/app/${account.prefix}/${shortNumber}`;
+}
+
+function cleanMoney(moneyString) {
+  return moneyString.replaceAll(/(\s+|\.|€)/g, '').replace(',', '.');
+}
+
+function getAccountBalance(document, account = undefined) {
+  if (account) {
+    const { iban } = account;
+    const selector = document.querySelectorAll('.g2p-account__iban');
+    const matches = [...selector].filter((el) => el.textContent === iban);
+    if (matches.length === 1) {
+      const node = matches[0];
+      const row = node.closest('.g2p-account__row');
+      if (row) {
+        const amount = row.querySelector('.g2p-account__balance');
+        if (amount) {
+          return cleanMoney(amount.textContent);
+        }
+      }
+    }
+  } else {
+    const node = document.querySelector(
+      'span.g2p-banking-header__account__balance'
+    );
+    if (node) {
+      return cleanMoney(node.textContent);
+    }
+  }
+}
+
+function getPendingBalance(document) {
+  const node = document.querySelector('div.g2p-transaction-group--prebooked');
+  if (node) {
+    const span = node.querySelector('span.g2p-amount');
+    if (span) {
+      return cleanMoney(span.textContent);
+    }
+  }
+}
 
 function fetchBalances(document) {
   const balancesMap = {};
@@ -78,9 +183,7 @@ function fetchBalances(document) {
       if (row) {
         const amount = row.querySelector('.g2p-account__balance');
         if (amount) {
-          const cleanAmount = amount.textContent
-            .replaceAll(/(\s+|\.|€)/g, '')
-            .replace(',', '.');
+          const cleanAmount = cleanMoney(amount.textContent);
 
           balancesMap[type] = cleanAmount;
         }
@@ -90,20 +193,24 @@ function fetchBalances(document) {
   return balancesMap;
 }
 
-function setAvailableFunds(balancesMap) {
+function calculateAvailableFunds(balancesMap) {
   let { threshold } = accountMap.extra;
   let balance = balancesMap.extra;
-  const availableFundsForTransfer =
-    new Fraction(balance) - new Fraction(threshold);
+  const availableFundsForTransfer = new Fraction(balance).sub(
+    new Fraction(threshold)
+  );
   threshold = accountMap.main.threshold;
-  balance = balancesMap.main;
-  const availableFundsInMain = new Fraction(balance) - new Fraction(threshold);
+  const realBalanceInMain = GM_getValue('realBalance', undefined);
+  const availableFundsInMain = new Fraction(realBalanceInMain).sub(
+    new Fraction(threshold)
+  );
   const availableFundsForInvesting =
-    availableFundsForTransfer + availableFundsInMain;
+    availableFundsForTransfer.add(availableFundsInMain);
   const fundsMap = {
-    amountToTransfer: availableFundsForTransfer,
-    amountToInvest: availableFundsForInvesting,
+    amountToTransfer: availableFundsForTransfer.round(2).toString(),
+    amountToInvest: availableFundsForInvesting.round(2).toString(),
   };
+  console.log(fundsMap);
   GM_setValue('state', 'fundsCalculated');
   GM_setValue('calculatedFunds', fundsMap);
 }

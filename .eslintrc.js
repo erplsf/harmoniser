@@ -15,4 +15,9 @@ module.exports = {
   globals: {
     VM: true,
   },
+  rules: {
+    indent: ['error', 2, { SwitchCase: 1 }],
+    'operator-linebreak': 'off',
+    'no-console': 'off',
+  },
 };

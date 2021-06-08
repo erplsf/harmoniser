@@ -1,11 +1,11 @@
 export function restoreConsole() {
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
   document.body.appendChild(iframe);
-  console = iframe.contentWindow.console;
-  window.console = console;
+  const restoredConsole = iframe.contentWindow.console;
+  window.console = restoredConsole;
 }
 
 export function locationMatches(location, rule) {
-  return location.replaceAll(/\?.*/g, "") === rule;
+  return location.replaceAll(/\?.*/g, '') === rule;
 }

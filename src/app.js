@@ -1,13 +1,14 @@
-// CSS modules
-import styles, { stylesheet } from "./style.module.css";
-import { accountMap } from "./secrets.js";
+/* global GM_getValue, GM_setValue, Fraction */
+
+import styles, { stylesheet } from './style.module.css';
+import { accountMap } from './secrets';
 
 export function appendButton(document) {
   VM.observe(document.body, () => {
-    const node = document.querySelector(".function-panel");
+    const node = document.querySelector('.function-panel');
 
     if (node) {
-      const ul = node.querySelector(".gs-span-16");
+      const ul = node.querySelector('.gs-span-16');
       if (ul) {
         const dom = (
           <>
@@ -35,40 +36,51 @@ export function appendButton(document) {
 export function harmonise(document, clicked = false) {
   if (clicked) {
     // reset the state if user clicked the button
-    // TODO: change later to ad double-click for reset
-    GM_setValue("state", "");
+    // TODO: change later to add double-click for reset
+    GM_setValue('state', '');
   }
-  const state = GM_getValue("state", "");
+  const state = GM_getValue('state', '');
   switch (state) {
-    case "":
-      console.log("empty state case");
+    case '': {
+      console.log('empty state case');
       const balances = fetchBalances(document);
       setAvailableFunds(balances);
       harmonise(document);
       break;
-    case "fundsCalculated":
-      console.log("fundsCalculated state");
+    }
+    case 'fundsCalculated':
+      console.log('fundsCalculated state');
       break;
     default:
-      console.log("default switch case");
+      console.log('default switch case');
   }
 }
+
+// function getAccountLink(account) {
+//   let shortNumber;
+//   if (account.accountNumber) {
+//     shortNumber = account.accountNumber;
+//   } else {
+//     shortNumber = account.iban.replaceAll(/\s+/g, '');
+//   }
+//   return `https://banking.ing.de/app/${account.prefix}/${shortNumber}`;
+// }
 
 function fetchBalances(document) {
   const balancesMap = {};
   for (const [type, account] of Object.entries(accountMap)) {
     const { iban } = account;
-    const selector = document.querySelectorAll(".g2p-account__iban");
-    const matches = [...selector].filter((el) => el.textContent == iban);
-    if (matches.length == 1) {
+    const selector = document.querySelectorAll('.g2p-account__iban');
+    const matches = [...selector].filter((el) => el.textContent === iban);
+    if (matches.length === 1) {
       const node = matches[0];
-      const row = node.closest(".g2p-account__row");
+      const row = node.closest('.g2p-account__row');
       if (row) {
-        const amount = row.querySelector(".g2p-account__balance");
+        const amount = row.querySelector('.g2p-account__balance');
         if (amount) {
           const cleanAmount = amount.textContent
-            .replaceAll(/(\s+|\.|€)/g, "")
-            .replace(",", ".");
+            .replaceAll(/(\s+|\.|€)/g, '')
+            .replace(',', '.');
 
           balancesMap[type] = cleanAmount;
         }
@@ -79,12 +91,12 @@ function fetchBalances(document) {
 }
 
 function setAvailableFunds(balancesMap) {
-  var { threshold } = accountMap["extra"];
-  var balance = balancesMap["extra"];
+  let { threshold } = accountMap.extra;
+  let balance = balancesMap.extra;
   const availableFundsForTransfer =
     new Fraction(balance) - new Fraction(threshold);
-  var { threshold } = accountMap["main"];
-  var balance = balancesMap["main"];
+  threshold = accountMap.main.threshold;
+  balance = balancesMap.main;
   const availableFundsInMain = new Fraction(balance) - new Fraction(threshold);
   const availableFundsForInvesting =
     availableFundsForTransfer + availableFundsInMain;
@@ -92,6 +104,6 @@ function setAvailableFunds(balancesMap) {
     amountToTransfer: availableFundsForTransfer,
     amountToInvest: availableFundsForInvesting,
   };
-  GM_setValue("state", "fundsCalculated");
-  GM_setValue("calculatedFunds", fundsMap);
+  GM_setValue('state', 'fundsCalculated');
+  GM_setValue('calculatedFunds', fundsMap);
 }

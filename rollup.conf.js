@@ -1,6 +1,7 @@
 const path = require('path');
 const { getRollupPlugins } = require('@gera2ld/plaid');
 const userscript = require('rollup-plugin-userscript');
+const strip = require('@rollup/plugin-strip');
 const pkg = require('./package.json');
 
 const DIST = 'dist';
@@ -22,15 +23,17 @@ const rollupConfig = [
       plugins: [
         ...getRollupPlugins({
           esm: true,
-          minimize: false,
+          minimize: true,
           postcss: postcssOptions,
         }),
-        userscript(
-          path.resolve('src/meta.js'),
-          meta => meta
+        userscript(path.resolve('src/meta.js'), (meta) =>
+          meta
             .replace('process.env.VERSION', pkg.version)
-            .replace('process.env.AUTHOR', pkg.author),
+            .replace('process.env.AUTHOR', pkg.author)
         ),
+        strip({
+          functions: ['console.*', 'assert.*', 'restoreConsole'],
+        }),
       ],
     },
     output: {

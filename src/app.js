@@ -70,7 +70,7 @@ export function harmonise(document, clicked = false) {
     case 'fundsCalculated': {
       console.log('fundsCalculated state');
 
-      if (strippedLocation != extraTransferLink) {
+      if (strippedLocation !== extraTransferLink) {
         GM_setValue('state', 'transferringFundsFromExtra');
         window.location.assign(extraTransferLink);
       }
@@ -93,8 +93,9 @@ export function harmonise(document, clicked = false) {
     }
     case 'waitingForExtraApproval':
       console.log('waitingForExtraApproval state');
-      if (strippedLocation === 'https://banking.ing.de/app/obligo') {
-      }
+      // TODO: implement
+      // if (strippedLocation === 'https://banking.ing.de/app/obligo') {
+      // }
       break;
     default:
       console.log('default switch case');
@@ -104,7 +105,7 @@ export function harmonise(document, clicked = false) {
 
 function getInputElement(document) {
   return document.querySelector(
-    "input[name='view:eingabepanel:form:betrag:betrag']"
+    "input[name='view:eingabepanel:form:betrag:betrag']",
   );
 }
 
@@ -153,7 +154,7 @@ function getAccountBalance(document, account = undefined) {
     }
   } else {
     const node = document.querySelector(
-      'span.g2p-banking-header__account__balance'
+      'span.g2p-banking-header__account__balance',
     );
     if (node) {
       return cleanMoney(node.textContent);
@@ -195,14 +196,14 @@ function fetchBalances(document) {
 
 function calculateAvailableFunds(balancesMap) {
   let { threshold } = accountMap.extra;
-  let balance = balancesMap.extra;
+  const balance = balancesMap.extra;
   const availableFundsForTransfer = new Fraction(balance).sub(
-    new Fraction(threshold)
+    new Fraction(threshold),
   );
   threshold = accountMap.main.threshold;
   const realBalanceInMain = GM_getValue('realBalance', undefined);
   const availableFundsInMain = new Fraction(realBalanceInMain).sub(
-    new Fraction(threshold)
+    new Fraction(threshold),
   );
   const availableFundsForInvesting =
     availableFundsForTransfer.add(availableFundsInMain);

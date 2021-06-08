@@ -23,7 +23,7 @@ const rollupConfig = [
       plugins: [
         ...getRollupPlugins({
           esm: true,
-          minimize: true,
+          minimize: false,
           postcss: postcssOptions,
         }),
         userscript(path.resolve('src/meta.js'), (meta) =>

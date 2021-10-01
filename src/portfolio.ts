@@ -8,6 +8,7 @@ export class Portfolio {
   private totalFunds: Fraction;
 
   constructor(funds: number, assets?: Asset[]) {
+    this.totalFunds = new Fraction(0);
     if (assets) {
       this.assets = assets;
     } else {
@@ -20,7 +21,7 @@ export class Portfolio {
     this.assets.push(asset);
   }
 
-  calculate(): void {
+  calculate(): { name: string, amount: Fraction }[] {
     this.totalFunds = this.assets.reduce(
       (sum, asset) => sum.add(asset.amount), new Fraction(0),
     );
@@ -33,7 +34,15 @@ export class Portfolio {
       asset.fracDev = fracDev;
       asset.targetValue = targetValue;
     });
-    this.assets.sort((a, b) => a.fracDev.compare(b.fracDev)) // flip the sign to get the smaller values first
+    this.assets.sort((a, b) => a.fracDev.compare(b.fracDev));
+
+    const affectedAssets = this.calcAssets(this.funds, this.assets.slice(0), []);
+    let targetDeviation = affectedAssets[affectedAssets.length - 2].fracDev;
+    targetDeviation = targetDeviation.add(this.calcDevForMoney(this.funds, affectedAssets.slice(0), new Fraction(0)));
+
+    const plan = affectedAssets.map(a => { return { name: a.name, amount: a.targetValue.mul(targetDeviation.sub(a.fracDev)) }; });
+
+    return plan;
   }
 
   private calcPortion(asset: Asset): Fraction {
@@ -47,14 +56,36 @@ export class Portfolio {
   private calcAssets(amount: Fraction, rest: Asset[], assets: Asset[]): Asset[] {
     const currentAsset = rest.pop();
 
+    if (!currentAsset) {
+      return assets;
+    }
+
     const catchUp = this.nextDeviation(rest).sub(currentAsset.fracDev);
     const targetSum = assets.reduce((sum, asset) => sum.add(asset.targetValue), currentAsset.targetValue)
     const delta = catchUp.mul(targetSum);
 
     if (delta.abs() < amount.abs()) {
-      return this.calcAssets(amount.sub(delta), rest, assets.concat(currentAsset));
+      return this.calcAssets(amount.sub(delta), rest, assets.concat([currentAsset]));
     } else {
-      return assets.concat(currentAsset);
+      return assets.concat([currentAsset]);
+    }
+  }
+
+  private calcDevForMoney(amount: Fraction, rest: Asset[], sum: Fraction): Fraction {
+    const currentAsset = rest.pop();
+
+    if (!currentAsset) {
+      return amount;
+    }
+
+    const newSum = currentAsset.targetValue.add(sum);
+    const catchUp = this.nextDeviation(rest).sub(currentAsset.fracDev);
+    const delta = catchUp.mul(newSum)
+
+    if (delta.abs() < amount.abs()) {
+      return this.calcDevForMoney(amount.sub(delta), rest, newSum);
+    } else {
+      return amount.div(newSum);
     }
   }
 

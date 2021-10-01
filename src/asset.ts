@@ -8,6 +8,7 @@ export class Asset {
   // calculated later
   portion: Fraction;
   fracDev: Fraction;
+  targetValue: Fraction;
 
   constructor(name: string, amount: number, target: number) {
     this.name = name;
@@ -17,5 +18,6 @@ export class Asset {
     // dummy assigments
     this.portion = new Fraction(1);
     this.fracDev = new Fraction(0);
+    this.targetValue = new Fraction(0);
   }
 };

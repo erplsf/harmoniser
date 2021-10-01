@@ -29,6 +29,8 @@
     "@gera2ld/plaid-common-react": "~2.3.0",
     "@gera2ld/plaid-rollup": "~2.3.0",
     "@rollup/plugin-strip": "^2.0.1",
+    "@rollup/plugin-typescript": "^8.2.5",
+    "@tsconfig/recommended": "^1.0.1",
     "del-cli": "^3.0.1",
     "eslint-config-prettier": "^8.3.0",
     "husky": "^5.2.0",

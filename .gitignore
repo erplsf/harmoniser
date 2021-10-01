@@ -6,4 +6,10 @@ node_modules
 /.nyc_output
 /coverage
 /types
+
+# temporarily ignore .js files
+balancer.js
+asset.js
+portfolio.js
+
 secrets*

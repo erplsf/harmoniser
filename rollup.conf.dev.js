@@ -6,6 +6,8 @@ const pkg = require('./package.json');
 const DIST = 'dist';
 const FILENAME = 'index';
 
+import typescript from '@rollup/plugin-typescript';
+
 const bundleOptions = {
   extend: true,
   esModule: false,
@@ -18,8 +20,9 @@ const postcssOptions = {
 const rollupConfig = [
   {
     input: {
-      input: 'src/index.js',
+      input: 'src/index.ts',
       plugins: [
+        typescript(),
         ...getRollupPlugins({
           esm: true,
           minimize: false,

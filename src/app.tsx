@@ -1,9 +1,7 @@
-/* global GM_getValue, GM_setValue, Fraction */
-
 import styles, { stylesheet } from './style.module.css';
-import { accountMap } from './secrets';
+import secrets from './secrets';
 
-export function appendButton(document) {
+export function appendButton(document: Document) {
   VM.observe(document.body, () => {
     const node = document.querySelector('.function-panel');
 
@@ -25,15 +23,16 @@ export function appendButton(document) {
           </>
         );
 
-        ul.prepend(dom);
+        ul.prepend(String(dom));
 
         return true;
       }
     }
+    return false;
   });
 }
 
-export function harmonise(document, clicked = false) {
+export function harmonise(document: Document, clicked = false) {
   const strippedLocation = window.location.toString().replaceAll(/\?.*/g, '');
   if (clicked && strippedLocation === 'https://banking.ing.de/app/obligo') {
     // reset the state if user clicked the button
@@ -41,12 +40,12 @@ export function harmonise(document, clicked = false) {
     GM_setValue('state', '');
   }
   const state = GM_getValue('state', '');
-  const extraTransferLink = getTransferLink(accountMap.extra);
+  const extraTransferLink = getTransferLink(secrets.accountMap.extra);
   switch (state) {
     case '': {
       console.log('empty state case');
       GM_setValue('state', 'calculatingRealBalance');
-      const accountLink = getAccountLink(accountMap.main);
+      const accountLink = getAccountLink(secrets.accountMap.main);
       window.location.assign(accountLink);
       break;
     }
@@ -103,17 +102,17 @@ export function harmonise(document, clicked = false) {
   }
 }
 
-function getInputElement(document) {
+function getInputElement(document: Document) {
   return document.querySelector(
     "input[name='view:eingabepanel:form:betrag:betrag']",
   );
 }
 
-function getNextButton(document) {
+function getNextButton(document: Document) {
   return document.querySelector("button[type='submit'][name='buttons:next']");
 }
 
-function getTransferLink(account) {
+function getTransferLink(account: { accountNumber: string; iban: string; }): string {
   let shortNumber;
   if (account.accountNumber) {
     shortNumber = account.accountNumber;
@@ -123,7 +122,7 @@ function getTransferLink(account) {
   return `https://banking.ing.de/app/ueberweisung_sepa/${shortNumber}`;
 }
 
-function getAccountLink(account) {
+function getAccountLink(account: { accountNumber: string; iban: string; prefix: string; }): string {
   let shortNumber;
   if (account.accountNumber) {
     shortNumber = account.accountNumber;
@@ -133,11 +132,11 @@ function getAccountLink(account) {
   return `https://banking.ing.de/app/${account.prefix}/${shortNumber}`;
 }
 
-function cleanMoney(moneyString) {
+function cleanMoney(moneyString: string): string {
   return moneyString.replaceAll(/(\s+|\.|€)/g, '').replace(',', '.');
 }
 
-function getAccountBalance(document, account = undefined) {
+function getAccountBalance(document: Document, account = undefined) {
   if (account) {
     const { iban } = account;
     const selector = document.querySelectorAll('.g2p-account__iban');
@@ -174,7 +173,7 @@ function getPendingBalance(document) {
 
 function fetchBalances(document) {
   const balancesMap = {};
-  for (const [type, account] of Object.entries(accountMap)) {
+  for (const [type, account] of Object.entries(secrets.accountMap)) {
     const { iban } = account;
     const selector = document.querySelectorAll('.g2p-account__iban');
     const matches = [...selector].filter((el) => el.textContent === iban);
@@ -195,12 +194,12 @@ function fetchBalances(document) {
 }
 
 function calculateAvailableFunds(balancesMap) {
-  let { threshold } = accountMap.extra;
+  let { threshold } = secrets.accountMap.extra;
   const balance = balancesMap.extra;
   const availableFundsForTransfer = new Fraction(balance).sub(
     new Fraction(threshold),
   );
-  threshold = accountMap.main.threshold;
+  threshold = secrets.accountMap.main.threshold;
   const realBalanceInMain = GM_getValue('realBalance', undefined);
   const availableFundsInMain = new Fraction(realBalanceInMain).sub(
     new Fraction(threshold),

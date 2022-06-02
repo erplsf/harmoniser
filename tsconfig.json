@@ -6,15 +6,9 @@
     "jsx": "react",
     "jsxFactory": "VM.createElement",
     "jsxFragmentFactory": "VM.Fragment",
-    "lib": [
-      "DOM",
-      "ES6",
-      "DOM.Iterable",
-      "ScriptHost",
-      "ESNext"
-    ]
+    "lib": ["DOM", "ES6", "DOM.Iterable", "ScriptHost", "ESNext"]
   },
   "extends": "@tsconfig/recommended/tsconfig.json",
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }

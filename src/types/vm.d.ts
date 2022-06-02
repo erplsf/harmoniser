@@ -1,2 +1,2 @@
-export * from '@violentmonkey/dom';
-export * from '@violentmonkey/ui';
+export * from '@violentmonkey/dom'
+export * from '@violentmonkey/ui'

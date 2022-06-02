@@ -1,5 +1,5 @@
-const test = require('ava');
+const test = require('ava')
 
-test('harmoniser', t => {
-  t.pass();
-});
+test('harmoniser', (t) => {
+  t.pass()
+})

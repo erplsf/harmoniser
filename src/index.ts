@@ -1,12 +1,12 @@
-import { appendButton, harmonise } from './app';
-import { restoreConsole, locationMatches } from './util';
+import {appendButton, harmonise} from './app.tsx'
+import {restoreConsole, locationMatches} from './util.ts'
 
-restoreConsole();
+restoreConsole()
 
 if (
   locationMatches(window.location.href, 'https://banking.ing.de/app/obligo')
 ) {
-  appendButton(document);
+  appendButton(document)
 }
 
-harmonise(document);
+harmonise(document)

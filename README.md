@@ -4,7 +4,7 @@ This is a userscript initiated from [@violentmonkey/generator-userscript](https:
 
 ## Development
 
-``` sh
+```sh
 $ yarn dev
 ```
 
@@ -16,6 +16,6 @@ $ yarn build
 
 ## Lint
 
-``` sh
+```sh
 $ yarn lint
 ```

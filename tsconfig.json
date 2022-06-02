@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strict": true,
+
     "target": "es6",
     "module": "es6",
     "moduleResolution": "node",

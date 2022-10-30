@@ -16,7 +16,8 @@
     "prebuild": "run-s ci clean",
     "build": "cross-env NODE_ENV=production run-s build:js",
     "ci": "run-s lint",
-    "lint": "eslint --ext .js ."
+    "lint": "eslint --ext .js .",
+    "test": "ava"
   },
   "dependencies": {
     "@babel/runtime": "^7.13.10",
@@ -25,16 +26,18 @@
     "fraction.js": "^4.1.1"
   },
   "devDependencies": {
-    "@gera2ld/plaid": "~2.3.0",
+    "@gera2ld/plaid": "^2.5.2",
     "@gera2ld/plaid-common-react": "~2.3.0",
-    "@gera2ld/plaid-rollup": "~2.3.0",
+    "@gera2ld/plaid-rollup": "^2.5.0",
     "@rollup/plugin-strip": "^2.0.1",
     "@rollup/plugin-typescript": "^8.2.5",
     "@tsconfig/recommended": "^1.0.1",
     "@types/react": "^17.0.27",
+    "ava": "^4.3.0",
     "del-cli": "^3.0.1",
     "eslint-config-prettier": "^8.3.0",
     "husky": "^5.2.0",
-    "rollup-plugin-userscript": "^0.1.1"
+    "rollup-plugin-userscript": "^0.1.1",
+    "typescript": "^4.7.2"
   }
 }
